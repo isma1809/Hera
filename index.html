@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WhatsApp Messenger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f2f5;
+    }
+
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    button {
+      background-color: #25d366;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #128c7e;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 20px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WhatsApp Messenger</h1>
+    <button id="connectBtn">Conectar con WhatsApp</button>
+    <button id="sendBtn" disabled>Enviar Mensaje</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const connectBtn = document.getElementById('connectBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const status = document.getElementById('status');
+
+    connectBtn.addEventListener('click', async () => {
+      status.textContent = 'Conectando con WhatsApp...';
+      connectBtn.disabled = true;
+
+      try {
+        const result = await ipcRenderer.invoke('connect-whatsapp');
+        if (result.success) {
+          status.textContent = 'Conectado con WhatsApp';
+          sendBtn.disabled = false;
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        status.textContent = `Error: ${error.message}`;
+        connectBtn.disabled = false;
+      }
+    });
+
+    sendBtn.addEventListener('click', async () => {
+      status.textContent = 'Enviando mensaje...';
+      sendBtn.disabled = true;
+
+      try {
+        const result = await ipcRenderer.invoke('send-message');
+        if (result.success) {
+          status.textContent = 'Mensaje enviado exitosamente';
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        status.textContent = `Error: ${error.message}`;
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
